@@ -56,7 +56,7 @@ _test_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-_test_app.include_router(router)
+_test_app.include_router(router, prefix="/galeria")
 
 # --- Strategies ---
 
@@ -156,7 +156,7 @@ class TestUploadShortCircuitOnContentTypeFailure:
                 form_data = {"categoria": categoria.value}
 
                 response = await client.post(
-                    "/upload/",
+                    "/galeria/upload/",
                     files=files,
                     data=form_data,
                 )

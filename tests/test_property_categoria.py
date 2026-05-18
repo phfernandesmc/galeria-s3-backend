@@ -68,7 +68,7 @@ def _get_test_app():
             from app.router import router
 
             test_app = FastAPI()
-            test_app.include_router(router)
+            test_app.include_router(router, prefix="/galeria")
             return test_app
         finally:
             # Restaurar módulos
@@ -90,7 +90,7 @@ with patch.dict(os.environ, _VALID_ENV, clear=False):
     from fastapi import FastAPI
 
     _test_app = FastAPI()
-    _test_app.include_router(router)
+    _test_app.include_router(router, prefix="/galeria")
 
 
 class TestInvalidCategoriaRejection:
@@ -122,7 +122,7 @@ class TestInvalidCategoriaRejection:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as client:
                 response = await client.post(
-                    "/upload/",
+                    "/galeria/upload/",
                     data={"categoria": invalid_cat},
                     files={"file": ("test.txt", io.BytesIO(b"content"), "text/plain")},
                 )
@@ -149,7 +149,7 @@ class TestInvalidCategoriaRejection:
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as client:
                 response = await client.get(
-                    "/arquivos/",
+                    "/galeria/arquivos/",
                     params={"categoria": invalid_cat},
                 )
 

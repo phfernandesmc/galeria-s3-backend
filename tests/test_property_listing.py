@@ -39,7 +39,7 @@ with patch.dict(os.environ, _TEST_ENV, clear=False):
 
 # Cria app de teste com o router
 _test_app = FastAPI()
-_test_app.include_router(router)
+_test_app.include_router(router, prefix="/galeria")
 
 
 # --- Strategies ---
@@ -107,7 +107,7 @@ class TestListingResponseTransformation:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as client:
-                response = await client.get("/arquivos/")
+                response = await client.get("/galeria/arquivos/")
 
             assert response.status_code == 200
             data = response.json()
@@ -126,7 +126,7 @@ class TestListingResponseTransformation:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as client:
-                response = await client.get("/arquivos/")
+                response = await client.get("/galeria/arquivos/")
 
             data = response.json()
             for i, arquivo in enumerate(data["arquivos"]):
@@ -145,7 +145,7 @@ class TestListingResponseTransformation:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as client:
-                response = await client.get("/arquivos/")
+                response = await client.get("/galeria/arquivos/")
 
             data = response.json()
             for i, arquivo in enumerate(data["arquivos"]):
@@ -164,7 +164,7 @@ class TestListingResponseTransformation:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as client:
-                response = await client.get("/arquivos/")
+                response = await client.get("/galeria/arquivos/")
 
             data = response.json()
             for i, arquivo in enumerate(data["arquivos"]):
@@ -183,7 +183,7 @@ class TestListingResponseTransformation:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as client:
-                response = await client.get("/arquivos/")
+                response = await client.get("/galeria/arquivos/")
 
             data = response.json()
             for i, arquivo in enumerate(data["arquivos"]):
@@ -202,7 +202,7 @@ class TestListingResponseTransformation:
 
             transport = ASGITransport(app=_test_app)
             async with AsyncClient(transport=transport, base_url="http://test") as client:
-                response = await client.get("/arquivos/")
+                response = await client.get("/galeria/arquivos/")
 
             data = response.json()
             # Response should only have "total" and "arquivos" keys

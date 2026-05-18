@@ -134,7 +134,7 @@ class TestUploadCompletoIntegration:
         files = {"file": ("foto_teste.jpg", io.BytesIO(file_content), "image/jpeg")}
         data = {"categoria": "fotos"}
 
-        response = await client.post("/upload/", files=files, data=data)
+        response = await client.post("/galeria/upload/", files=files, data=data)
 
         assert response.status_code == 201
         body = response.json()
@@ -181,7 +181,7 @@ class TestUploadDownloadIntegration:
                             data = {"categoria": "documentos"}
 
                             upload_response = await ac.post(
-                                "/upload/", files=files, data=data
+                                "/galeria/upload/", files=files, data=data
                             )
                             assert upload_response.status_code == 201
 
@@ -191,7 +191,7 @@ class TestUploadDownloadIntegration:
 
                             # 3. Download
                             download_response = await ac.get(
-                                f"/arquivos/{arquivo_id}/download"
+                                f"/galeria/arquivos/{arquivo_id}/download"
                             )
 
                             assert download_response.status_code == 200
@@ -235,7 +235,7 @@ class TestListagemFiltradaIntegration:
                                 )
                             }
                             resp1 = await ac.post(
-                                "/upload/",
+                                "/galeria/upload/",
                                 files=files_foto,
                                 data={"categoria": "fotos"},
                             )
@@ -250,7 +250,7 @@ class TestListagemFiltradaIntegration:
                                 )
                             }
                             resp2 = await ac.post(
-                                "/upload/",
+                                "/galeria/upload/",
                                 files=files_doc,
                                 data={"categoria": "documentos"},
                             )
@@ -265,7 +265,7 @@ class TestListagemFiltradaIntegration:
                                 )
                             }
                             resp3 = await ac.post(
-                                "/upload/",
+                                "/galeria/upload/",
                                 files=files_foto2,
                                 data={"categoria": "fotos"},
                             )
@@ -273,7 +273,7 @@ class TestListagemFiltradaIntegration:
 
                             # 4. Listar apenas fotos
                             list_response = await ac.get(
-                                "/arquivos/?categoria=fotos"
+                                "/galeria/arquivos/?categoria=fotos"
                             )
 
                             assert list_response.status_code == 200
@@ -322,7 +322,7 @@ class TestFalhaParcialIntegration:
                     }
                     data = {"categoria": "fotos"}
 
-                    response = await ac.post("/upload/", files=files, data=data)
+                    response = await ac.post("/galeria/upload/", files=files, data=data)
 
                     assert response.status_code == 500
                     body = response.json()

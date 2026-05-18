@@ -92,5 +92,5 @@ def test_app_metadata():
 def test_router_incluido():
     """O router do Router_Module deve estar incluído na app."""
     paths = [route.path for route in app.routes]
-    assert "/upload/" in paths
-    assert "/arquivos/" in paths
+    assert "/galeria/upload/" in paths
+    assert "/galeria/arquivos/" in paths
