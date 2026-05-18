@@ -61,14 +61,29 @@ class InMemoryDB:
         self.storage.append(doc)
         return str(doc["_id"])
 
-    async def listar(self, categoria=None):
-        """Simula listagem com filtro opcional."""
-        if categoria is None:
-            return list(self.storage)
-        return [
-            doc for doc in self.storage
-            if doc.get("categoria") == categoria.value
-        ]
+    async def listar(self, categoria=None, nome=None, ordenar_por=None, ordem="desc"):
+        """Simula listagem com filtros opcionais."""
+        resultado = list(self.storage)
+        if categoria is not None:
+            resultado = [
+                doc for doc in resultado
+                if doc.get("categoria") == categoria.value
+            ]
+        if nome:
+            resultado = [
+                doc for doc in resultado
+                if nome.lower() in doc.get("nome_original", "").lower()
+            ]
+        # Ordenação
+        campo_map = {
+            "nome": "nome_original",
+            "data": "data_upload",
+            "tamanho": "tamanho_bytes",
+        }
+        sort_field = campo_map.get(ordenar_por, "data_upload") if ordenar_por else "data_upload"
+        reverse = ordem != "asc"
+        resultado.sort(key=lambda d: d.get(sort_field, ""), reverse=reverse)
+        return resultado
 
     async def buscar_por_id(self, arquivo_id: str):
         """Simula busca por ID."""

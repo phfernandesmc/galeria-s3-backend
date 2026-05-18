@@ -75,13 +75,16 @@ async def upload_arquivo_endpoint(
 @router.get("/arquivos/", tags=["Galeria"])
 async def listar_arquivos_endpoint(
     categoria: Annotated[CategoriaEnum | None, Query(description="Filtrar por categoria")] = None,
+    nome: Annotated[str | None, Query(description="Busca parcial por nome do arquivo")] = None,
+    ordenar_por: Annotated[str | None, Query(description="Campo para ordenação: nome, data, tamanho")] = None,
+    ordem: Annotated[str, Query(description="Direção da ordenação: asc ou desc")] = "desc",
 ):
-    """Lista metadados de arquivos com filtro opcional por categoria.
+    """Lista metadados de arquivos com filtros opcionais.
 
     Retorna total e array de objetos com id, nome, data e tamanho.
     Não gera Pre-signed URLs na listagem.
     """
-    documentos = await listar_arquivos(categoria)
+    documentos = await listar_arquivos(categoria, nome, ordenar_por, ordem)
 
     arquivos = [
         {

@@ -73,11 +73,19 @@ async def inserir_arquivo(entity: ArquivoEntity) -> str:
         )
 
 
-async def listar_arquivos(categoria: CategoriaEnum | None = None) -> list[dict]:
-    """Lista metadados de arquivos com filtro opcional por categoria.
+async def listar_arquivos(
+    categoria: CategoriaEnum | None = None,
+    nome: str | None = None,
+    ordenar_por: str | None = None,
+    ordem: str = "desc",
+) -> list[dict]:
+    """Lista metadados de arquivos com filtros opcionais.
 
     Args:
         categoria: Se fornecido, filtra documentos pela categoria especificada.
+        nome: Se fornecido, busca parcial (case-insensitive) no nome do arquivo.
+        ordenar_por: Campo para ordenação: "nome", "data" ou "tamanho".
+        ordem: Direção da ordenação: "asc" ou "desc".
 
     Returns:
         Lista de dicionários com os documentos encontrados.
@@ -89,8 +97,20 @@ async def listar_arquivos(categoria: CategoriaEnum | None = None) -> list[dict]:
         collection = get_collection()
         filtro: dict = {}
         if categoria is not None:
-            filtro = {"categoria": categoria.value}
-        cursor = collection.find(filtro)
+            filtro["categoria"] = categoria.value
+        if nome:
+            filtro["nome_original"] = {"$regex": nome, "$options": "i"}
+
+        # Mapeamento de campos para ordenação
+        campo_map = {
+            "nome": "nome_original",
+            "data": "data_upload",
+            "tamanho": "tamanho_bytes",
+        }
+        sort_field = campo_map.get(ordenar_por, "data_upload") if ordenar_por else "data_upload"
+        sort_direction = 1 if ordem == "asc" else -1
+
+        cursor = collection.find(filtro).sort(sort_field, sort_direction)
         documentos = await cursor.to_list(length=None)
         return documentos
     except PyMongoError as e:

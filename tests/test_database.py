@@ -246,6 +246,7 @@ class TestListarArquivos:
 
         mock_cursor = MagicMock()
         mock_cursor.to_list = AsyncMock(return_value=documentos_fotos)
+        mock_cursor.sort = MagicMock(return_value=mock_cursor)
         mock_collection.find.return_value = mock_cursor
 
         with patch("app.database.get_collection", return_value=mock_collection):
@@ -279,6 +280,7 @@ class TestListarArquivos:
 
         mock_cursor = MagicMock()
         mock_cursor.to_list = AsyncMock(return_value=todos_documentos)
+        mock_cursor.sort = MagicMock(return_value=mock_cursor)
         mock_collection.find.return_value = mock_cursor
 
         with patch("app.database.get_collection", return_value=mock_collection):
@@ -298,6 +300,7 @@ class TestListarArquivos:
         """
         error_msg = "cursor not found on server, cursor id: 12345"
         mock_cursor = MagicMock()
+        mock_cursor.sort = MagicMock(return_value=mock_cursor)
         mock_cursor.to_list = AsyncMock(
             side_effect=ServerSelectionTimeoutError(error_msg)
         )
