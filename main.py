@@ -8,7 +8,7 @@ de variáveis de ambiente antes de aceitar tráfego.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import settings  # noqa: F401 — trigger fail-fast validation
+from app.config import settings
 from app.router import router
 
 app = FastAPI(
@@ -17,10 +17,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Origens permitidas via variável de ambiente CORS_ORIGINS (separadas por vírgula).
+# allow_credentials=False pois a API não usa cookies/sessão — apenas dados públicos
+# de origem controlada. Isso evita a combinação inválida de "*" com credenciais.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=settings.cors_origins_list,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

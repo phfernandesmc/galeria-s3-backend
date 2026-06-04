@@ -69,7 +69,7 @@ async def inserir_arquivo(entity: ArquivoEntity) -> str:
         logger.error("Erro ao inserir arquivo no MongoDB: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Erro de banco de dados ao inserir arquivo: {e}",
+            detail="Erro de banco de dados ao inserir arquivo.",
         )
 
 
@@ -117,7 +117,7 @@ async def listar_arquivos(
         logger.error("Erro ao listar arquivos no MongoDB: %s", str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Erro de banco de dados ao listar arquivos: {e}",
+            detail="Erro de banco de dados ao listar arquivos.",
         )
 
 
@@ -136,10 +136,10 @@ async def buscar_arquivo_por_id(arquivo_id: str) -> dict | None:
     """
     try:
         oid = ObjectId(arquivo_id)
-    except (InvalidId, Exception) as e:
+    except (InvalidId, Exception):
         raise HTTPException(
             status_code=400,
-            detail=f"ID de arquivo inválido: {arquivo_id} - {e}",
+            detail="ID de arquivo inválido.",
         )
 
     try:
@@ -152,5 +152,5 @@ async def buscar_arquivo_por_id(arquivo_id: str) -> dict | None:
         )
         raise HTTPException(
             status_code=500,
-            detail=f"Erro de banco de dados ao buscar arquivo: {e}",
+            detail="Erro de banco de dados ao buscar arquivo.",
         )

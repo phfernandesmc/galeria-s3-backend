@@ -23,8 +23,18 @@ class Settings(BaseSettings):
     AWS_REGION: str = "us-east-1"
     AWS_BUCKET_NAME: str
     MONGODB_URI: str
+    CORS_ORIGINS: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Converte CORS_ORIGINS (string separada por vírgula) em lista.
+
+        Ignora espaços e entradas vazias. Lista vazia significa que nenhuma
+        origem de browser é permitida (configuração segura por padrão).
+        """
+        return [origem.strip() for origem in self.CORS_ORIGINS.split(",") if origem.strip()]
 
     @field_validator("MONGODB_URI")
     @classmethod

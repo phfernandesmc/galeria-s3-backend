@@ -1,0 +1,38 @@
+# Variáveis de ambiente / segredos
+.env
+.env.*
+!.env.example
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testes / cobertura
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.mypy_cache/
+.ruff_cache/
+
+# IDEs e SO
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp

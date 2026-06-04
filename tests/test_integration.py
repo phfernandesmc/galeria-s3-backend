@@ -342,6 +342,8 @@ class TestFalhaParcialIntegration:
                     assert response.status_code == 500
                     body = response.json()
                     assert (
-                        "Arquivo enviado ao S3 mas falha ao registrar metadados"
+                        "falha ao registrar os metadados"
                         in body["detail"]
                     )
+                    # O detalhe técnico interno não deve vazar para o cliente
+                    assert "connection timeout" not in body["detail"]

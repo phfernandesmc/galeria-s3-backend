@@ -111,7 +111,7 @@ class TestInserirArquivo:
     ):
         """
         Erro de conexão/operação PyMongo resulta em HTTPException 500
-        com detalhes do erro Motor/PyMongo na mensagem.
+        com mensagem genérica (sem vazar detalhes internos ao cliente).
 
         **Validates: Requirements 8.7**
         """
@@ -127,7 +127,8 @@ class TestInserirArquivo:
 
         assert exc_info.value.status_code == 500
         assert "Erro de banco de dados ao inserir arquivo" in exc_info.value.detail
-        assert error_msg in exc_info.value.detail
+        # A mensagem técnica não deve vazar para o cliente
+        assert error_msg not in exc_info.value.detail
 
 
 class TestBuscarArquivoPorId:
@@ -194,7 +195,7 @@ class TestBuscarArquivoPorId:
     async def test_buscar_arquivo_erro_pymongo_levanta_http_500(self, mock_collection):
         """
         Erro de conexão/operação PyMongo na busca resulta em HTTPException 500
-        com detalhes do erro Motor/PyMongo.
+        com mensagem genérica (sem vazar detalhes internos ao cliente).
 
         **Validates: Requirements 8.7**
         """
@@ -209,7 +210,8 @@ class TestBuscarArquivoPorId:
 
         assert exc_info.value.status_code == 500
         assert "Erro de banco de dados ao buscar arquivo" in exc_info.value.detail
-        assert error_msg in exc_info.value.detail
+        # A mensagem técnica não deve vazar para o cliente
+        assert error_msg not in exc_info.value.detail
 
 
 class TestListarArquivos:
@@ -294,7 +296,7 @@ class TestListarArquivos:
     async def test_listar_erro_pymongo_levanta_http_500(self, mock_collection):
         """
         Erro de conexão/operação PyMongo na listagem resulta em HTTPException 500
-        com detalhes do erro Motor/PyMongo.
+        com mensagem genérica (sem vazar detalhes internos ao cliente).
 
         **Validates: Requirements 8.7**
         """
@@ -313,4 +315,5 @@ class TestListarArquivos:
 
         assert exc_info.value.status_code == 500
         assert "Erro de banco de dados ao listar arquivos" in exc_info.value.detail
-        assert error_msg in exc_info.value.detail
+        # A mensagem técnica não deve vazar para o cliente
+        assert error_msg not in exc_info.value.detail

@@ -81,7 +81,8 @@ class TestUploadArquivo:
         assert resultado == "planilhas/relatorio.xlsx"
 
     def test_upload_erro_inclui_key_e_mensagem_aws(self):
-        """Erro de upload inclui chave S3 e mensagem original AWS. (Req 5.4)"""
+        """Erro de upload retorna 500 com mensagem genérica, sem vazar chave S3
+        nem a mensagem original da AWS ao cliente. (Req 5.4)"""
         from botocore.exceptions import ClientError
         from fastapi import HTTPException
 
@@ -99,11 +100,13 @@ class TestUploadArquivo:
                 upload_arquivo(file_stream, caminho_s3)
 
             assert exc_info.value.status_code == 500
-            assert caminho_s3 in exc_info.value.detail
-            assert "Access Denied" in exc_info.value.detail
+            assert "Erro ao fazer upload" in exc_info.value.detail
+            # Detalhes internos não devem vazar para o cliente
+            assert caminho_s3 not in exc_info.value.detail
+            assert "Access Denied" not in exc_info.value.detail
 
     def test_upload_erro_no_credentials_inclui_key(self):
-        """Erro NoCredentialsError inclui chave S3 na mensagem. (Req 5.4)"""
+        """Erro NoCredentialsError retorna 500 genérico sem vazar a chave S3. (Req 5.4)"""
         from botocore.exceptions import NoCredentialsError
         from fastapi import HTTPException
 
@@ -118,7 +121,8 @@ class TestUploadArquivo:
                 upload_arquivo(file_stream, caminho_s3)
 
             assert exc_info.value.status_code == 500
-            assert caminho_s3 in exc_info.value.detail
+            assert "Erro ao fazer upload" in exc_info.value.detail
+            assert caminho_s3 not in exc_info.value.detail
 
 
 class TestGerarPresignedUrl:
@@ -160,7 +164,8 @@ class TestGerarPresignedUrl:
         assert url.startswith("https://")
 
     def test_presigned_url_erro_inclui_key_e_mensagem(self):
-        """Erro na geração de URL inclui chave S3 e mensagem AWS. (Req 6.4)"""
+        """Erro na geração de URL retorna 500 genérico, sem vazar chave S3
+        nem a mensagem original da AWS ao cliente. (Req 6.4)"""
         from botocore.exceptions import ClientError
         from fastapi import HTTPException
 
@@ -177,11 +182,14 @@ class TestGerarPresignedUrl:
                 gerar_presigned_url(caminho_s3)
 
             assert exc_info.value.status_code == 500
-            assert caminho_s3 in exc_info.value.detail
-            assert "The specified key does not exist" in exc_info.value.detail
+            assert "Erro ao gerar URL de download" in exc_info.value.detail
+            # Detalhes internos não devem vazar para o cliente
+            assert caminho_s3 not in exc_info.value.detail
+            assert "The specified key does not exist" not in exc_info.value.detail
 
     def test_presigned_url_erro_no_credentials_inclui_key(self):
-        """Erro NoCredentialsError na geração de URL inclui chave S3. (Req 6.4)"""
+        """Erro NoCredentialsError na geração de URL retorna 500 genérico
+        sem vazar a chave S3. (Req 6.4)"""
         from botocore.exceptions import NoCredentialsError
         from fastapi import HTTPException
 
@@ -195,4 +203,5 @@ class TestGerarPresignedUrl:
                 gerar_presigned_url(caminho_s3)
 
             assert exc_info.value.status_code == 500
-            assert caminho_s3 in exc_info.value.detail
+            assert "Erro ao gerar URL de download" in exc_info.value.detail
+            assert caminho_s3 not in exc_info.value.detail

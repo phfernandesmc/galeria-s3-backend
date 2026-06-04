@@ -7,11 +7,15 @@ Pre-signed URLs temporárias sob demanda.
 
 from typing import BinaryIO
 
+import logging
+
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 from fastapi import HTTPException
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def get_s3_client():
@@ -47,14 +51,16 @@ def upload_arquivo(file_stream: BinaryIO, caminho_s3: str) -> str:
         )
         return caminho_s3
     except ClientError as e:
+        logger.error("Erro ao fazer upload para S3 (%s): %s", caminho_s3, str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao fazer upload para S3: {caminho_s3} - {e}",
+            detail="Erro ao fazer upload do arquivo.",
         )
     except NoCredentialsError as e:
+        logger.error("Credenciais S3 ausentes/inválidas no upload (%s): %s", caminho_s3, str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao fazer upload para S3: {caminho_s3} - {e}",
+            detail="Erro ao fazer upload do arquivo.",
         )
 
 
@@ -83,12 +89,14 @@ def gerar_presigned_url(caminho_s3: str) -> str:
         )
         return url
     except ClientError as e:
+        logger.error("Erro ao gerar URL de download (%s): %s", caminho_s3, str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao gerar URL de download: {caminho_s3} - {e}",
+            detail="Erro ao gerar URL de download.",
         )
     except NoCredentialsError as e:
+        logger.error("Credenciais S3 ausentes/inválidas ao gerar URL (%s): %s", caminho_s3, str(e))
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao gerar URL de download: {caminho_s3} - {e}",
+            detail="Erro ao gerar URL de download.",
         )

@@ -60,7 +60,7 @@ async def upload_arquivo_endpoint(
         )
         raise HTTPException(
             status_code=500,
-            detail=f"Arquivo enviado ao S3 mas falha ao registrar metadados: {e.detail}",
+            detail="Arquivo enviado, mas houve falha ao registrar os metadados.",
         )
 
     # 5. Retorno de sucesso

@@ -49,10 +49,63 @@ async def test_health_check_retorna_status_ok():
     assert response.json() == {"status": "ok"}
 
 
+def _make_cors_app(origins: list[str]):
+    """Cria uma app FastAPI isolada com a mesma config de CORS de produção.
+
+    Evita reimportar main.py/app.* (que contaminaria sys.modules e quebraria
+    os mocks de outros testes). Replica exatamente o middleware usado em main.py.
+    """
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+
+    cors_app = FastAPI()
+    cors_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    @cors_app.get("/")
+    async def _root():
+        return {"status": "ok"}
+
+    return cors_app
+
+
+def test_cors_origins_list_faz_parsing_de_string_separada_por_virgula():
+    """settings.cors_origins_list converte a string CSV em lista limpa."""
+    from app.config import Settings
+
+    s = Settings(
+        AWS_ACCESS_KEY_ID="k",
+        AWS_SECRET_ACCESS_KEY="s",
+        AWS_BUCKET_NAME="b",
+        MONGODB_URI="mongodb://localhost:27017/test",
+        CORS_ORIGINS=" https://a.com , https://b.com ,, ",
+    )
+    assert s.cors_origins_list == ["https://a.com", "https://b.com"]
+
+
+def test_cors_origins_list_vazio_retorna_lista_vazia():
+    """CORS_ORIGINS vazio (padrão seguro) resulta em lista vazia."""
+    from app.config import Settings
+
+    s = Settings(
+        AWS_ACCESS_KEY_ID="k",
+        AWS_SECRET_ACCESS_KEY="s",
+        AWS_BUCKET_NAME="b",
+        MONGODB_URI="mongodb://localhost:27017/test",
+    )
+    assert s.cors_origins_list == []
+
+
 @pytest.mark.asyncio
-async def test_cors_headers_presentes():
-    """Requisição com Origin deve receber headers CORS na resposta."""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+async def test_cors_reflete_origem_configurada():
+    """Origem listada em CORS_ORIGINS deve ser refletida nos headers CORS."""
+    cors_app = _make_cors_app(["http://localhost:3000"])
+    async with AsyncClient(transport=ASGITransport(app=cors_app), base_url="http://test") as client:
         response = await client.options(
             "/",
             headers={
@@ -61,16 +114,33 @@ async def test_cors_headers_presentes():
             },
         )
 
-    # Com allow_credentials=True, Starlette reflete o Origin ao invés de "*"
     allow_origin = response.headers.get("access-control-allow-origin")
-    assert allow_origin in ("*", "http://localhost:3000")
+    assert allow_origin == "http://localhost:3000"
     assert "GET" in response.headers.get("access-control-allow-methods", "")
 
 
 @pytest.mark.asyncio
-async def test_cors_allow_credentials():
-    """CORS deve permitir credentials."""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+async def test_cors_rejeita_origem_nao_listada():
+    """Origem fora de CORS_ORIGINS não deve receber header de permissão."""
+    cors_app = _make_cors_app(["http://localhost:3000"])
+    async with AsyncClient(transport=ASGITransport(app=cors_app), base_url="http://test") as client:
+        response = await client.options(
+            "/",
+            headers={
+                "Origin": "http://malicioso.example",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+
+    allow_origin = response.headers.get("access-control-allow-origin")
+    assert allow_origin != "http://malicioso.example"
+
+
+@pytest.mark.asyncio
+async def test_cors_nao_permite_credentials():
+    """API não usa cookies/sessão: allow_credentials deve estar desativado."""
+    cors_app = _make_cors_app(["http://localhost:3000"])
+    async with AsyncClient(transport=ASGITransport(app=cors_app), base_url="http://test") as client:
         response = await client.options(
             "/",
             headers={
@@ -79,7 +149,7 @@ async def test_cors_allow_credentials():
             },
         )
 
-    assert response.headers.get("access-control-allow-credentials") == "true"
+    assert response.headers.get("access-control-allow-credentials") != "true"
 
 
 def test_app_metadata():
